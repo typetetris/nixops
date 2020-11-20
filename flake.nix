@@ -8,7 +8,7 @@
   outputs = { self, nixpkgs, utils }: utils.lib.eachDefaultSystem (system: let
     pkgs = import nixpkgs { inherit system; };
 
-    poetry2nix = import (nixpkgs.fetchFromGithub {
+    poetry2nix = import (pkgs.fetchFromGitHub {
       owner = "nix-community";
       repo = "poetry2nix";
       rev = "1894b501cf4431fb218c4939a9acdbf397ac1803";
