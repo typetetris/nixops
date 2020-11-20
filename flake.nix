@@ -5,7 +5,7 @@
 
   inputs.utils.url = "github:numtide/flake-utils";
 
-
+  inputs.poetry2nixsrc.url = "github:nix-community/poetry2nix";
   inputs.poetry2nixsrc.inputs.nixpkgs.follows = "nixpkgs";
 
   outputs = { self, nixpkgs, utils, poetry2nixsrc }: builtins.trace poetry2nixsrc.outputs.packages (utils.lib.eachDefaultSystem (system: let
