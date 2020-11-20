@@ -5,15 +5,13 @@
 
   inputs.utils.url = "github:numtide/flake-utils";
 
-  outputs = { self, nixpkgs, utils }: utils.lib.eachDefaultSystem (system: let
+
+  inputs.poetry2nixsrc.inputs.nixpkgs.follows = "nixpkgs";
+
+  outputs = { self, nixpkgs, utils, poetry2nixsrc }: builtins.trace poetry2nixsrc.outputs.packages (utils.lib.eachDefaultSystem (system: let
     pkgs = import nixpkgs { inherit system; };
 
-    poetry2nix = import (pkgs.fetchFromGitHub {
-      owner = "nix-community";
-      repo = "poetry2nix";
-      rev = "1894b501cf4431fb218c4939a9acdbf397ac1803";
-      sha256 = "13ldn2gcqc3glzshxyxz9pz6gr53y8zgabgx42pcszwhrkvfk9l8";
-    }) { inherit pkgs; inherit (pkgs) poetry; };
+    inherit (poetry2nixsrc.outputs.packages."${system}") poetry2nix;
 
     pythonEnv = (poetry2nix.mkPoetryEnv {
       projectDir = ./.;
@@ -134,5 +132,5 @@
         ${linters.doc}/bin/lint-docs | tee $out
       '';
     };
-  });
+  }));
 }
