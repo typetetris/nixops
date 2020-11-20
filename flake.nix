@@ -1,14 +1,21 @@
 {
   description = "NixOps: a tool for deploying to [NixOS](https://nixos.org) machines in a network or the cloud";
 
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-20.09";
 
   inputs.utils.url = "github:numtide/flake-utils";
 
   outputs = { self, nixpkgs, utils }: utils.lib.eachDefaultSystem (system: let
     pkgs = import nixpkgs { inherit system; };
 
-    pythonEnv = (pkgs.poetry2nix.mkPoetryEnv {
+    poetry2nix = import (nixpkgs.fetchFromGithub {
+      owner = "nix-community";
+      repo = "poetry2nix";
+      rev = "1894b501cf4431fb218c4939a9acdbf397ac1803";
+      sha256 = "13ldn2gcqc3glzshxyxz9pz6gr53y8zgabgx42pcszwhrkvfk9l8";
+    }) { inherit pkgs; inherit (pkgs) poetry; };
+
+    pythonEnv = (poetry2nix.mkPoetryEnv {
       projectDir = ./.;
     });
     linters.doc = pkgs.writers.writeBashBin "lint-docs" ''
@@ -45,7 +52,7 @@
     defaultPackage = let
       overrides = import ./overrides.nix { inherit pkgs; };
 
-    in pkgs.poetry2nix.mkPoetryApplication {
+    in poetry2nix.mkPoetryApplication {
       projectDir = ./.;
 
       propagatedBuildInputs = [
@@ -54,7 +61,7 @@
       ];
 
       overrides = [
-        pkgs.poetry2nix.defaultPoetryOverrides
+        poetry2nix.defaultPoetryOverrides
         overrides
       ];
 
@@ -100,7 +107,7 @@
       name = "nixops-docs";
       # we use cleanPythonSources because the default gitignore
       # implementation doesn't support the restricted evaluation
-      src = pkgs.poetry2nix.cleanPythonSources {
+      src = poetry2nix.cleanPythonSources {
         src = ./.;
       };
 
@@ -119,7 +126,7 @@
       name = "lint-docs";
       # we use cleanPythonSources because the default gitignore
       # implementation doesn't support the restricted evaluation
-      src = pkgs.poetry2nix.cleanPythonSources {
+      src = poetry2nix.cleanPythonSources {
         src = ./.;
       };
       dontBuild = true;
